@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎮 GameZone — 3 Games in 1!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ─────────────────── CSS VARIABLES ─────────────────── */
+    :root {
+      --bg: #0a0a1a;
+      --bg2: #12122a;
+      --bg3: #1a1a3e;
+      --card: #1e1e42;
+      --border: #2e2e6e;
+      --text: #e8e8ff;
+      --text2: #9999cc;
+      --neon1: #ff2d78;
+      --neon2: #00f5ff;
+      --neon3: #b9ff2d;
+      --neon4: #ff9f00;
+      --neon5: #c77dff;
+      --glow1: 0 0 20px #ff2d78aa, 0 0 40px #ff2d7855;
+      --glow2: 0 0 20px #00f5ffaa, 0 0 40px #00f5ff55;
+      --glow3: 0 0 20px #b9ff2daa, 0 0 40px #b9ff2d55;
+      --transition: .3s cubic-bezier(.4,0,.2,1);
+    }
+    [data-theme="light"] {
+      --bg: #f0f0ff;
+      --bg2: #e0e0f8;
+      --bg3: #d0d0f0;
+      --card: #ffffff;
+      --border: #c0c0e8;
+      --text: #1a1a3e;
+      --text2: #5555aa;
+      --glow1: 0 4px 20px #ff2d7855;
+      --glow2: 0 4px 20px #00c8dd55;
+      --glow3: 0 4px 20px #7faa0055;
+    }
+
+    /* ─────────────────── RESET & BASE ─────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background var(--transition), color var(--transition);
+      overflow-x: hidden;
+    }
+    button { cursor: pointer; font-family: 'Nunito', sans-serif; }
+
+    /* ─────────────────── LOADING SCREEN ─────────────────── */
+    #loader {
+      position: fixed; inset: 0; background: #000015;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 9999; gap: 24px;
+      transition: opacity .6s ease, visibility .6s ease;
+    }
+    #loader.hidden { opacity: 0; visibility: hidden; }
+    .loader-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(1.8rem, 6vw, 3.5rem);
+      font-weight: 900;
+      background: linear-gradient(90deg, #ff2d78, #00f5ff, #b9ff2d, #ff9f00);
+      background-size: 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradShift 2s linear infinite, bounceIn .6s ease;
+    }
+    .loader-ring {
+      width: 80px; height: 80px;
+      border: 6px solid transparent;
+      border-top-color: var(--neon1);
+      border-right-color: var(--neon2);
+      border-bottom-color: var(--neon3);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      filter: drop-shadow(0 0 12px #ff2d78);
+    }
+    .loader-bar-wrap {
+      width: 260px; height: 10px;
+      background: #222244; border-radius: 99px; overflow: hidden;
+    }
+    .loader-bar {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #ff2d78, #00f5ff, #b9ff2d);
+      border-radius: 99px;
+      animation: loadBar 2s ease forwards;
+      box-shadow: 0 0 10px #00f5ff;
+    }
+    .loader-text {
+      font-family: 'Orbitron', monospace; font-size: .85rem;
+      color: var(--neon2); letter-spacing: 2px;
+      animation: blink 1s ease infinite;
+    }
+
+    /* ─────────────────── BACKGROUND PARTICLES ─────────────────── */
+    #particles-bg {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+    }
+    .particle {
+      position: absolute; border-radius: 50%;
+      animation: floatUp linear infinite;
+      opacity: 0;
+    }
+
+    /* ─────────────────── HEADER ─────────────────── */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      padding: 12px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px;
+      transition: background var(--transition);
+    }
+    .header-logo {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(1rem, 3vw, 1.5rem);
+      font-weight: 900;
+      background: linear-gradient(90deg, #ff2d78, #00f5ff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .icon-btn {
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--text); width: 40px; height: 40px;
+      border-radius: 12px; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition);
+    }
+    .icon-btn:hover { transform: scale(1.1); border-color: var(--neon2); box-shadow: var(--glow2); }
+    .total-score-pill {
+      background: linear-gradient(135deg, #ff2d78, #c77dff);
+      color: #fff; padding: 6px 14px; border-radius: 99px;
+      font-family: 'Orbitron', monospace; font-size: .8rem; font-weight: 700;
+      box-shadow: var(--glow1);
+    }
+
+    /* ─────────────────── MAIN LAYOUT ─────────────────── */
+    main { position: relative; z-index: 1; padding: 20px 16px 40px; max-width: 760px; margin: 0 auto; }
+
+    /* ─────────────────── GAME TABS ─────────────────── */
+    .tab-bar {
+      display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto;
+      padding-bottom: 4px; scrollbar-width: none;
+    }
+    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      flex-shrink: 0; padding: 10px 18px;
+      background: var(--card); border: 2px solid var(--border);
+      border-radius: 14px; color: var(--text2);
+      font-weight: 700; font-size: .9rem;
+      transition: all var(--transition); white-space: nowrap;
+    }
+    .tab-btn:hover { border-color: var(--neon2); color: var(--neon2); }
+    .tab-btn.active {
+      border-color: var(--neon1); color: var(--neon1);
+      background: var(--bg3); box-shadow: var(--glow1);
+    }
+
+    /* ─────────────────── GAME PANEL ─────────────────── */
+    .game-panel { display: none; animation: fadeSlideUp .4s ease; }
+    .game-panel.active { display: block; }
+
+    .game-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 10px; margin-bottom: 16px;
+    }
+    .game-title {
+      font-family: 'Orbitron', monospace; font-size: clamp(1.1rem, 4vw, 1.6rem); font-weight: 900;
+    }
+    .game-stats { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .stat-badge {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 10px; padding: 6px 12px;
+      font-family: 'Orbitron', monospace; font-size: .75rem; font-weight: 700;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .stat-badge span { color: var(--neon2); }
+
+    .difficulty-row { display: flex; gap: 6px; margin-bottom: 14px; }
+    .diff-btn {
+      padding: 6px 14px; border-radius: 99px;
+      border: 2px solid var(--border);
+      background: var(--card); color: var(--text2);
+      font-size: .8rem; font-weight: 700;
+      transition: all var(--transition);
+    }
+    .diff-btn.active-easy { border-color: var(--neon3); color: var(--neon3); background: #b9ff2d15; }
+    .diff-btn.active-medium { border-color: var(--neon4); color: var(--neon4); background: #ff9f0015; }
+    .diff-btn.active-hard { border-color: var(--neon1); color: var(--neon1); background: #ff2d7815; }
+
+    .game-btn {
+      padding: 10px 22px; border-radius: 12px;
+      border: none; font-weight: 800; font-size: .95rem;
+      transition: all var(--transition); letter-spacing: .5px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #ff2d78, #c77dff);
+      color: #fff; box-shadow: var(--glow1);
+    }
+    .btn-primary:hover { transform: translateY(-2px) scale(1.04); }
+    .btn-secondary {
+      background: var(--bg3); border: 2px solid var(--border); color: var(--text2);
+    }
+    .btn-secondary:hover { border-color: var(--neon2); color: var(--neon2); }
+
+    /* ─────────────────── REWARD TOAST ─────────────────── */
+    #toast-wrap { position: fixed; bottom: 24px; right: 16px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+    .toast {
+      background: linear-gradient(135deg, #1e1e42, #2e2e6e);
+      border: 1px solid var(--neon3);
+      border-radius: 14px; padding: 12px 18px;
+      font-weight: 700; font-size: .9rem;
+      color: var(--neon3); box-shadow: var(--glow3);
+      animation: toastIn .4s ease, toastOut .4s ease 2.6s forwards;
+      max-width: 280px;
+    }
+
+    /* ─────────────────── ACHIEVEMENT BANNER ─────────────────── */
+    #ach-banner {
+      position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-120px);
+      background: linear-gradient(135deg, #ff9f00, #ff2d78);
+      color: #fff; padding: 12px 28px; border-radius: 18px;
+      font-weight: 800; font-size: 1rem; text-align: center;
+      box-shadow: 0 8px 40px #ff2d7880; z-index: 998;
+      transition: transform .5s cubic-bezier(.34,1.56,.64,1);
+      white-space: nowrap;
+    }
+    #ach-banner.show { transform: translateX(-50%) translateY(0); }
+
+    /* ══════════════════════════════════════════
+       GAME 1 – SNAKE
+    ══════════════════════════════════════════ */
+    #snake-wrap { position: relative; }
+    #snake-canvas {
+      display: block; margin: 0 auto;
+      border-radius: 18px;
+      border: 2px solid var(--neon2);
+      box-shadow: var(--glow2);
+      max-width: 100%;
+      touch-action: none;
+      background: #060614;
+    }
+    .snake-overlay {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      border-radius: 18px; gap: 16px;
+      background: #060614cc; backdrop-filter: blur(8px);
+    }
+    .overlay-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(1.4rem, 5vw, 2.4rem); font-weight: 900;
+      background: linear-gradient(90deg, #ff2d78, #00f5ff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .snake-dpad {
+      display: grid; grid-template-columns: repeat(3,52px); grid-template-rows: repeat(3,52px);
+      gap: 6px; margin: 14px auto 0; justify-content: center;
+    }
+    .dpad-btn {
+      background: var(--bg3); border: 2px solid var(--border);
+      border-radius: 12px; color: var(--text); font-size: 1.3rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .15s; user-select: none; -webkit-user-select: none;
+    }
+    .dpad-btn:active { background: var(--neon2); color: #000; transform: scale(.92); }
+
+    /* ══════════════════════════════════════════
+       GAME 2 – MEMORY CARD
+    ══════════════════════════════════════════ */
+    .memory-grid {
+      display: grid; gap: 10px;
+      grid-template-columns: repeat(4, 1fr);
+      max-width: 420px; margin: 0 auto;
+    }
+    .memory-grid.hard { grid-template-columns: repeat(5, 1fr); max-width: 520px; }
+    .mem-card {
+      aspect-ratio: 1; perspective: 600px; cursor: pointer;
+    }
+    .mem-card-inner {
+      width: 100%; height: 100%;
+      transform-style: preserve-3d;
+      transition: transform .5s cubic-bezier(.4,0,.2,1);
+      border-radius: 14px; position: relative;
+    }
+    .mem-card.flipped .mem-card-inner { transform: rotateY(180deg); }
+    .mem-card.matched .mem-card-inner { transform: rotateY(180deg); }
+    .mem-card-face {
+      position: absolute; inset: 0; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: clamp(1.4rem, 5vw, 2rem);
+      backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    }
+    .mem-card-back {
+      background: linear-gradient(135deg, #1e1e42, #2e2e6e);
+      border: 2px solid var(--border);
+      background-image: repeating-linear-gradient(
+        45deg, transparent, transparent 6px,
+        rgba(255,255,255,.03) 6px, rgba(255,255,255,.03) 12px
+      );
+    }
+    .mem-card-front {
+      background: linear-gradient(135deg, var(--neon5)22, var(--neon2)22);
+      border: 2px solid var(--neon2);
+      transform: rotateY(180deg);
+      box-shadow: var(--glow2);
+    }
+    .mem-card.matched .mem-card-front {
+      background: linear-gradient(135deg, #b9ff2d22, #00f5ff22);
+      border-color: var(--neon3);
+      box-shadow: var(--glow3);
+      animation: matchPop .4s ease;
+    }
+    .mem-card.wrong .mem-card-inner { animation: shake .4s ease; }
+
+    /* ══════════════════════════════════════════
+       GAME 3 – WHACK-A-MOLE
+    ══════════════════════════════════════════ */
+    .mole-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 12px; max-width: 420px; margin: 0 auto;
+    }
+    .mole-hole {
+      aspect-ratio: 1; border-radius: 20px;
+      background: radial-gradient(circle at 50% 80%, #0a0a2e 40%, #12124a 100%);
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: clamp(2rem, 8vw, 3.5rem);
+      cursor: pointer; position: relative; overflow: hidden;
+      transition: all .15s; user-select: none;
+    }
+    .mole-hole::after {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 110%, #1a1a50 30%, transparent 70%);
+      border-radius: inherit;
+    }
+    .mole-emoji {
+      position: relative; z-index: 1;
+      transform: translateY(120%);
+      transition: transform .2s cubic-bezier(.34,1.56,.64,1);
+      font-size: clamp(2rem, 8vw, 3.5rem);
+      display: block;
+      filter: drop-shadow(0 0 8px #ff9f00);
+    }
+    .mole-hole.active .mole-emoji { transform: translateY(0); }
+    .mole-hole.whacked .mole-emoji { transform: translateY(0) scale(1.3); animation: whackAnim .3s ease forwards; }
+    .mole-hole.active { border-color: var(--neon4); box-shadow: var(--glow1); }
+
+    .wam-timer-bar {
+      height: 10px; background: var(--bg3); border-radius: 99px; overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .wam-timer-fill {
+      height: 100%; border-radius: 99px;
+      background: linear-gradient(90deg, var(--neon3), var(--neon4), var(--neon1));
+      transition: width .1s linear; box-shadow: 0 0 8px #ff9f00;
+    }
+
+    /* ─────────────────── HIGH SCORE TABLE ─────────────────── */
+    .hiscore-table {
+      margin-top: 16px;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+    }
+    .hiscore-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; border-bottom: 1px solid var(--border);
+      font-size: .85rem;
+    }
+    .hiscore-row:last-child { border-bottom: none; }
+    .hiscore-row .rank { font-family: 'Orbitron', monospace; font-size: .7rem; color: var(--text2); width: 24px; }
+    .hiscore-row .name { flex: 1; font-weight: 700; }
+    .hiscore-row .pts { font-family: 'Orbitron', monospace; color: var(--neon2); font-weight: 700; }
+
+    /* ─────────────────── MODAL ─────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: #00001599;
+      backdrop-filter: blur(10px); z-index: 500;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px; opacity: 0; visibility: hidden;
+      transition: all var(--transition);
+    }
+    .modal-overlay.open { opacity: 1; visibility: visible; }
+    .modal-box {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 24px; padding: 32px 28px; max-width: 360px; width: 100%;
+      text-align: center;
+      transform: scale(.8) translateY(20px);
+      transition: transform var(--transition);
+    }
+    .modal-overlay.open .modal-box { transform: scale(1) translateY(0); }
+    .modal-icon { font-size: 3.5rem; margin-bottom: 12px; }
+    .modal-title { font-family: 'Orbitron', monospace; font-size: 1.5rem; margin-bottom: 8px; }
+    .modal-body { color: var(--text2); margin-bottom: 20px; line-height: 1.6; }
+    .modal-score { font-family: 'Orbitron', monospace; font-size: 2rem; color: var(--neon2); font-weight: 900; margin: 8px 0; }
+    .modal-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+    /* ─────────────────── KEYFRAMES ─────────────────── */
+    @keyframes gradShift { 0%{background-position:0%} 100%{background-position:200%} }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes loadBar { from{width:0} to{width:100%} }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+    @keyframes bounceIn { from{transform:scale(.5);opacity:0} to{transform:scale(1);opacity:1} }
+    @keyframes fadeSlideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes floatUp {
+      0%{opacity:0;transform:translateY(100vh) scale(0)}
+      10%{opacity:.6}
+      90%{opacity:.3}
+      100%{opacity:0;transform:translateY(-10vh) scale(1.5)}
+    }
+    @keyframes matchPop { 0%{transform:rotateY(180deg) scale(1)} 50%{transform:rotateY(180deg) scale(1.2)} 100%{transform:rotateY(180deg) scale(1)} }
+    @keyframes shake {
+      0%,100%{transform:rotateY(180deg) translateX(0)}
+      25%{transform:rotateY(180deg) translateX(-8px)}
+      75%{transform:rotateY(180deg) translateX(8px)}
+    }
+    @keyframes whackAnim { to{transform:translateY(-20px) scale(.5);opacity:0} }
+    @keyframes toastIn { from{opacity:0;transform:translateX(60px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes toastOut { from{opacity:1} to{opacity:0;transform:translateX(60px)} }
+    @keyframes scoreFloat {
+      0%{opacity:1;transform:translateY(0) scale(1)}
+      100%{opacity:0;transform:translateY(-60px) scale(1.5)}
+    }
+
+    /* ─────────────────── RESPONSIVE ─────────────────── */
+    @media(max-width:420px) {
+      .memory-grid { grid-template-columns: repeat(4,1fr); gap: 7px; }
+      .memory-grid.hard { grid-template-columns: repeat(4,1fr); }
+      .mole-grid { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── LOADING SCREEN ─── -->
+<div id="loader">
+  <div class="loader-title">🎮 GameZone</div>
+  <div class="loader-ring"></div>
+  <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+  <div class="loader-text">MEMUAT GAME...</div>
+</div>
+
+<!-- ─── PARTICLES ─── -->
+<div id="particles-bg"></div>
+
+<!-- ─── ACHIEVEMENT BANNER ─── -->
+<div id="ach-banner">🏆 Pencapaian Baru!</div>
+
+<!-- ─── TOAST WRAP ─── -->
+<div id="toast-wrap"></div>
+
+<!-- ─── MODAL ─── -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <div class="modal-icon" id="modal-icon">🎉</div>
+    <div class="modal-title" id="modal-title">Game Over!</div>
+    <div class="modal-score" id="modal-score">0</div>
+    <div class="modal-body" id="modal-body">Coba lagi untuk skor lebih tinggi!</div>
+    <div class="modal-actions" id="modal-actions">
+      <button class="game-btn btn-primary" id="modal-restart">▶ Main Lagi</button>
+      <button class="game-btn btn-secondary" onclick="closeModal()">✕ Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── HEADER ─── -->
+<header>
+  <div class="header-logo">🎮 GameZone</div>
+  <div class="header-actions">
+    <div class="total-score-pill" id="total-score-pill">⭐ 0</div>
+    <button class="icon-btn" id="theme-btn" title="Toggle tema" onclick="toggleTheme()">🌙</button>
+    <button class="icon-btn" title="Refresh" onclick="refreshGame()">🔄</button>
+  </div>
+</header>
+
+<!-- ─── MAIN ─── -->
+<main>
+
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('snake')">🐍 Snake</button>
+    <button class="tab-btn" onclick="switchTab('memory')">🃏 Memory</button>
+    <button class="tab-btn" onclick="switchTab('mole')">🔨 Whack!</button>
+  </div>
+
+  <!-- ══════ SNAKE GAME ══════ -->
+  <div class="game-panel active" id="panel-snake">
+    <div class="game-header">
+      <div class="game-title" style="color:var(--neon2)">🐍 Snake</div>
+      <div class="game-stats">
+        <div class="stat-badge">Skor <span id="snake-score">0</span></div>
+        <div class="stat-badge">Terbaik <span id="snake-hi">0</span></div>
+        <div class="stat-badge">Level <span id="snake-lv">1</span></div>
+      </div>
+    </div>
+    <div class="difficulty-row" id="snake-diff-row">
+      <button class="diff-btn active-easy" onclick="setSnakeDiff('easy',this)">🟢 Mudah</button>
+      <button class="diff-btn" onclick="setSnakeDiff('medium',this)">🟡 Sedang</button>
+      <button class="diff-btn" onclick="setSnakeDiff('hard',this)">🔴 Susah</button>
+    </div>
+    <div id="snake-wrap">
+      <canvas id="snake-canvas" width="360" height="360"></canvas>
+      <div class="snake-overlay" id="snake-overlay">
+        <div class="overlay-title">🐍 SNAKE</div>
+        <p style="color:var(--text2);text-align:center;font-size:.9rem">Makan apel, hindari tembok & diri sendiri!</p>
+        <button class="game-btn btn-primary" onclick="startSnake()">▶ Mulai Game</button>
+      </div>
+    </div>
+    <!-- D-PAD (mobile) -->
+    <div class="snake-dpad" id="dpad">
+      <div></div>
+      <button class="dpad-btn" ontouchstart="snakeDir('UP')" onmousedown="snakeDir('UP')">▲</button>
+      <div></div>
+      <button class="dpad-btn" ontouchstart="snakeDir('LEFT')" onmousedown="snakeDir('LEFT')">◀</button>
+      <div></div>
+      <button class="dpad-btn" ontouchstart="snakeDir('RIGHT')" onmousedown="snakeDir('RIGHT')">▶</button>
+      <div></div>
+      <button class="dpad-btn" ontouchstart="snakeDir('DOWN')" onmousedown="snakeDir('DOWN')">▼</button>
+      <div></div>
+    </div>
+    <!-- High Scores -->
+    <div class="hiscore-table">
+      <div class="hiscore-row" style="background:var(--bg2)"><span class="rank" style="color:var(--neon1)">Rank</span><span class="name">Pemain</span><span class="pts">Skor</span></div>
+      <div id="snake-hiscore-list"></div>
+    </div>
+  </div>
+
+  <!-- ══════ MEMORY CARD GAME ══════ -->
+  <div class="game-panel" id="panel-memory">
+    <div class="game-header">
+      <div class="game-title" style="color:var(--neon5)">🃏 Memory</div>
+      <div class="game-stats">
+        <div class="stat-badge">Langkah <span id="mem-moves">0</span></div>
+        <div class="stat-badge">Combo <span id="mem-combo">0</span></div>
+        <div class="stat-badge">Terbaik <span id="mem-hi">—</span></div>
+      </div>
+    </div>
+    <div class="difficulty-row" id="mem-diff-row">
+      <button class="diff-btn active-easy" onclick="setMemDiff('easy',this)">🟢 4×4</button>
+      <button class="diff-btn" onclick="setMemDiff('medium',this)">🟡 4×4 Cepat</button>
+      <button class="diff-btn" onclick="setMemDiff('hard',this)">🔴 5×4</button>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <button class="game-btn btn-primary" onclick="startMemory()">🔀 Mulai Baru</button>
+    </div>
+    <div class="memory-grid" id="memory-grid"></div>
+  </div>
+
+  <!-- ══════ WHACK-A-MOLE ══════ -->
+  <div class="game-panel" id="panel-mole">
+    <div class="game-header">
+      <div class="game-title" style="color:var(--neon4)">🔨 Whack-a-Mole!</div>
+      <div class="game-stats">
+        <div class="stat-badge">Skor <span id="mole-score">0</span></div>
+        <div class="stat-badge">Miss <span id="mole-miss">0</span></div>
+        <div class="stat-badge">Terbaik <span id="mole-hi">0</span></div>
+      </div>
+    </div>
+    <div class="difficulty-row" id="mole-diff-row">
+      <button class="diff-btn active-easy" onclick="setMoleDiff('easy',this)">🟢 Santai</button>
+      <button class="diff-btn" onclick="setMoleDiff('medium',this)">🟡 Normal</button>
+      <button class="diff-btn" onclick="setMoleDiff('hard',this)">🔴 Gila</button>
+    </div>
+    <div style="margin-bottom:10px">
+      <button class="game-btn btn-primary" id="mole-start-btn" onclick="startMole()">▶ Mulai (30s)</button>
+    </div>
+    <div class="wam-timer-bar"><div class="wam-timer-fill" id="mole-timer-fill" style="width:100%"></div></div>
+    <div class="mole-grid" id="mole-grid"></div>
+    <div class="hiscore-table" style="margin-top:16px">
+      <div class="hiscore-row" style="background:var(--bg2)"><span class="rank" style="color:var(--neon1)">Rank</span><span class="name">Pemain</span><span class="pts">Skor</span></div>
+      <div id="mole-hiscore-list"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════════════════ */
+const $ = id => document.getElementById(id);
+let totalScore = 0;
+
+function addTotal(n) {
+  totalScore += n;
+  $('total-score-pill').textContent = `⭐ ${totalScore}`;
+}
+
+// TOAST
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  $('toast-wrap').appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+// ACHIEVEMENT BANNER
+const achUnlocked = new Set();
+function checkAch(key, label) {
+  if (achUnlocked.has(key)) return;
+  achUnlocked.add(key);
+  const b = $('ach-banner');
+  b.textContent = `🏆 ${label}`;
+  b.classList.add('show');
+  setTimeout(() => b.classList.remove('show'), 3000);
+  showToast(`🏆 Pencapaian: ${label}`);
+}
+
+// MODAL
+function openModal(icon, title, score, body, restartFn) {
+  $('modal-icon').textContent = icon;
+  $('modal-title').textContent = title;
+  $('modal-score').textContent = score;
+  $('modal-body').textContent = body;
+  $('modal-restart').onclick = () => { closeModal(); restartFn(); };
+  $('modal').classList.add('open');
+}
+function closeModal() { $('modal').classList.remove('open'); }
+
+// FLOATING SCORE
+function floatScore(el, text) {
+  const rect = el.getBoundingClientRect();
+  const f = document.createElement('div');
+  f.textContent = text;
+  f.style.cssText = `position:fixed;left:${rect.left+rect.width/2}px;top:${rect.top}px;
+    font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;color:#00f5ff;
+    pointer-events:none;z-index:9000;transform:translateX(-50%);
+    animation:scoreFloat .9s ease forwards;`;
+  document.body.appendChild(f);
+  setTimeout(() => f.remove(), 900);
+}
+
+// THEME
+function toggleTheme() {
+  const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  $('theme-btn').textContent = t === 'dark' ? '🌙' : '☀️';
+}
+
+// TAB SWITCH
+function switchTab(id) {
+  document.querySelectorAll('.game-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  $(`panel-${id}`).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    if (b.textContent.toLowerCase().includes(id === 'snake' ? 'snake' : id === 'memory' ? 'memory' : 'whack')) b.classList.add('active');
+  });
+}
+
+// REFRESH
+function refreshGame() {
+  const active = document.querySelector('.game-panel.active');
+  if (!active) return;
+  if (active.id === 'panel-snake') { if(snakeRunning) stopSnake(); showSnakeOverlay(); }
+  if (active.id === 'panel-memory') startMemory();
+  if (active.id === 'panel-mole') { stopMole(); }
+}
+
+// PARTICLES
+(function spawnParticles() {
+  const wrap = $('particles-bg');
+  const colors = ['#ff2d78','#00f5ff','#b9ff2d','#ff9f00','#c77dff'];
+  for (let i = 0; i < 25; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random()*6+3;
+    p.style.cssText = `
+      left:${Math.random()*100}%;
+      width:${size}px;height:${size}px;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-duration:${Math.random()*15+10}s;
+      animation-delay:${Math.random()*10}s;
+      filter:blur(1px);
+    `;
+    wrap.appendChild(p);
+  }
+})();
+
+// LOADER
+window.addEventListener('load', () => {
+  setTimeout(() => { $('loader').classList.add('hidden'); }, 2200);
+  renderSnakeHiScores();
+  renderMoleHiScores();
+  startMemory();
+});
+
+/* ═══════════════════════════════════════════════════════
+   GAME 1: SNAKE
+═══════════════════════════════════════════════════════ */
+const snakeCanvas = $('snake-canvas');
+const sCtx = snakeCanvas.getContext('2d');
+const GRID = 18, COLS = 20, ROWS = 20;
+const CELL = snakeCanvas.width / COLS;
+
+let snake, dir, nextDir, food, bonus, snakeScore, snakeRunning, snakeInterval, snakeDiff = 'easy', snakeLv = 1;
+let snakeHiScores = JSON.parse(localStorage.getItem('snake-hi') || '[]');
+
+const SNAKE_SPEEDS = { easy: 180, medium: 110, hard: 65 };
+const EMOJIS_FOOD = ['🍎','🍊','🍋','🍇','🍓'];
+
+function setSnakeDiff(d, btn) {
+  snakeDiff = d;
+  $('snake-diff-row').querySelectorAll('.diff-btn').forEach(b => b.className = 'diff-btn');
+  btn.className = `diff-btn active-${d}`;
+  if (snakeRunning) { stopSnake(); showSnakeOverlay(); }
+}
+
+function startSnake() {
+  snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+  dir = {x:1,y:0}; nextDir = {x:1,y:0};
+  snakeScore = 0; snakeLv = 1;
+  $('snake-score').textContent = 0; $('snake-lv').textContent = 1;
+  placeFood(); placeBonus();
+  $('snake-overlay').style.display = 'none';
+  snakeRunning = true;
+  clearInterval(snakeInterval);
+  snakeInterval = setInterval(snakeTick, SNAKE_SPEEDS[snakeDiff]);
+}
+
+function stopSnake() {
+  snakeRunning = false; clearInterval(snakeInterval);
+}
+
+function showSnakeOverlay() {
+  $('snake-overlay').style.display = '';
+}
+
+function placeFood() {
+  food = {
+    x: Math.floor(Math.random()*COLS),
+    y: Math.floor(Math.random()*ROWS),
+    emoji: EMOJIS_FOOD[Math.floor(Math.random()*EMOJIS_FOOD.length)]
+  };
+}
+function placeBonus() {
+  if (Math.random() < .4) {
+    bonus = { x: Math.floor(Math.random()*COLS), y: Math.floor(Math.random()*ROWS), ttl: 8 };
+  } else bonus = null;
+}
+
+function snakeTick() {
+  dir = { ...nextDir };
+  const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+  // wall check
+  if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) return snakeDie();
+  // self check
+  if (snake.some(s => s.x === head.x && s.y === head.y)) return snakeDie();
+
+  snake.unshift(head);
+
+  if (head.x === food.x && head.y === food.y) {
+    snakeScore += 10 * snakeLv; addTotal(10);
+    $('snake-score').textContent = snakeScore;
+    placeFood();
+    if (snake.length % 5 === 0) {
+      snakeLv++; $('snake-lv').textContent = snakeLv;
+      clearInterval(snakeInterval);
+      snakeInterval = setInterval(snakeTick, Math.max(40, SNAKE_SPEEDS[snakeDiff] - (snakeLv-1)*10));
+      showToast(`🚀 Level ${snakeLv}! Makin cepat!`);
+    }
+    if (snakeScore >= 50) checkAch('snake50','Snake: Skor 50!');
+    if (snakeScore >= 200) checkAch('snake200','Snake Master!');
+    placeBonus();
+  } else if (bonus && head.x === bonus.x && head.y === bonus.y) {
+    snakeScore += 30; addTotal(30);
+    $('snake-score').textContent = snakeScore;
+    floatScore(snakeCanvas, '+30 ⚡');
+    bonus = null; placeBonus();
+  } else {
+    snake.pop();
+    if (bonus) { bonus.ttl--; if (bonus.ttl <= 0) bonus = null; }
+  }
+  drawSnake();
+}
+
+function drawSnake() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  sCtx.fillStyle = isDark ? '#060614' : '#f0f0ff';
+  sCtx.fillRect(0,0,snakeCanvas.width,snakeCanvas.height);
+
+  // grid dots
+  sCtx.fillStyle = isDark ? 'rgba(255,255,255,.04)' : 'rgba(0,0,100,.04)';
+  for (let x=0;x<COLS;x++) for(let y=0;y<ROWS;y++) {
+    sCtx.beginPath(); sCtx.arc(x*CELL+CELL/2,y*CELL+CELL/2,1.5,0,Math.PI*2); sCtx.fill();
+  }
+
+  // food
+  sCtx.font = `${CELL*.7}px serif`;
+  sCtx.textAlign='center'; sCtx.textBaseline='middle';
+  sCtx.fillText(food.emoji, food.x*CELL+CELL/2, food.y*CELL+CELL/2);
+
+  // bonus
+  if (bonus) {
+    sCtx.globalAlpha = .5 + .5*Math.sin(Date.now()/200);
+    sCtx.fillText('⚡', bonus.x*CELL+CELL/2, bonus.y*CELL+CELL/2);
+    sCtx.globalAlpha = 1;
+  }
+
+  // snake body
+  snake.forEach((seg, i) => {
+    const hue = 160 + i*3;
+    sCtx.save();
+    sCtx.shadowBlur = 12; sCtx.shadowColor = '#00f5ff';
+    sCtx.fillStyle = i===0 ? '#00f5ff' : `hsl(${hue},100%,${60-i*1.5}%)`;
+    const r = CELL*.4;
+    roundRect(sCtx, seg.x*CELL+CELL*.1, seg.y*CELL+CELL*.1, CELL*.8, CELL*.8, r);
+    sCtx.restore();
+    if (i===0) {
+      sCtx.font = `${CELL*.45}px serif`;
+      sCtx.fillText('👁', seg.x*CELL+CELL/2, seg.y*CELL+CELL/2);
+    }
+  });
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath(); ctx.fill();
+}
+
+function snakeDie() {
+  stopSnake();
+  // save hi score
+  const best = $('snake-hi').textContent;
+  if (snakeScore > parseInt(best)) $('snake-hi').textContent = snakeScore;
+  snakeHiScores.push({ name: `🐍 Run`, score: snakeScore, diff: snakeDiff });
+  snakeHiScores.sort((a,b) => b.score-a.score);
+  snakeHiScores = snakeHiScores.slice(0,5);
+  localStorage.setItem('snake-hi', JSON.stringify(snakeHiScores));
+  renderSnakeHiScores();
+
+  openModal('💀','Game Over!', `${snakeScore} pts`,
+    `Panjang ular: ${snake.length} | Level: ${snakeLv}`, startSnake);
+}
+
+function renderSnakeHiScores() {
+  const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+  $('snake-hiscore-list').innerHTML = snakeHiScores.map((s,i) =>
+    `<div class="hiscore-row"><span class="rank">${medals[i]}</span><span class="name">${s.name} <span style="color:var(--text2);font-size:.75rem">[${s.diff}]</span></span><span class="pts">${s.score}</span></div>`
+  ).join('') || `<div class="hiscore-row" style="color:var(--text2)">Belum ada skor!</div>`;
+}
+
+function snakeDir(d) {
+  const map = { UP:{x:0,y:-1}, DOWN:{x:0,y:1}, LEFT:{x:-1,y:0}, RIGHT:{x:1,y:0} };
+  const nd = map[d];
+  if (nd.x !== -dir.x || nd.y !== -dir.y) nextDir = nd;
+}
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (!snakeRunning) return;
+  const m = { ArrowUp:'UP', ArrowDown:'DOWN', ArrowLeft:'LEFT', ArrowRight:'RIGHT',
+    w:'UP', s:'DOWN', a:'LEFT', d:'RIGHT' };
+  if (m[e.key]) { e.preventDefault(); snakeDir(m[e.key]); }
+});
+
+// Touch swipe on canvas
+let tx=0, ty=0;
+snakeCanvas.addEventListener('touchstart', e => {
+  tx = e.touches[0].clientX; ty = e.touches[0].clientY; e.preventDefault();
+}, {passive:false});
+snakeCanvas.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - tx;
+  const dy = e.changedTouches[0].clientY - ty;
+  if (Math.abs(dx) > Math.abs(dy)) snakeDir(dx>0?'RIGHT':'LEFT');
+  else snakeDir(dy>0?'DOWN':'UP');
+  e.preventDefault();
+}, {passive:false});
+
+/* ═══════════════════════════════════════════════════════
+   GAME 2: MEMORY CARD
+═══════════════════════════════════════════════════════ */
+const ALL_EMOJIS = ['🐶','🦊','🐸','🦄','🐙','🦋','🦁','🐬','🌈','🍕','🎸','🚀','⚡','🎯','🌺','🍄','🦀','🐧','🦩','🌙'];
+let memDiff = 'easy', memCards = [], memFlipped = [], memMatches = 0, memMoves = 0, memCombo = 0, memLocked = false;
+let memHiBest = {};
+
+function setMemDiff(d, btn) {
+  memDiff = d;
+  $('mem-diff-row').querySelectorAll('.diff-btn').forEach(b => b.className = 'diff-btn');
+  btn.className = `diff-btn active-${d}`;
+  startMemory();
+}
+
+function startMemory() {
+  memFlipped = []; memMatches = 0; memMoves = 0; memCombo = 0; memLocked = false;
+  $('mem-moves').textContent = 0; $('mem-combo').textContent = 0;
+
+  const pairCount = memDiff === 'hard' ? 10 : 8;
+  const pool = ALL_EMOJIS.slice(0, pairCount);
+  const deck = [...pool, ...pool].sort(() => Math.random()-.5);
+  memCards = deck.map((e, i) => ({ id: i, emoji: e, flipped: false, matched: false }));
+
+  const grid = $('memory-grid');
+  grid.className = `memory-grid${memDiff==='hard'?' hard':''}`;
+  grid.innerHTML = '';
+
+  memCards.forEach((card, i) => {
+    const el = document.createElement('div');
+    el.className = 'mem-card';
+    el.innerHTML = `<div class="mem-card-inner">
+      <div class="mem-card-face mem-card-back">❓</div>
+      <div class="mem-card-face mem-card-front">${card.emoji}</div>
+    </div>`;
+    el.addEventListener('click', () => flipCard(i, el));
+    el.addEventListener('touchend', e => { e.preventDefault(); flipCard(i, el); }, {passive:false});
+    grid.appendChild(el);
+    card.el = el;
+  });
+
+  // If medium, show all briefly then hide
+  if (memDiff === 'medium') {
+    memCards.forEach(c => c.el.classList.add('flipped'));
+    setTimeout(() => memCards.forEach(c => { if(!c.matched) c.el.classList.remove('flipped'); }), 1200);
+  }
+}
+
+function flipCard(i, el) {
+  const card = memCards[i];
+  if (memLocked || card.flipped || card.matched) return;
+  card.flipped = true;
+  el.classList.add('flipped');
+  memFlipped.push(i);
+
+  if (memFlipped.length === 2) {
+    memLocked = true; memMoves++;
+    $('mem-moves').textContent = memMoves;
+    const [a, b] = memFlipped;
+    const ca = memCards[a], cb = memCards[b];
+
+    if (ca.emoji === cb.emoji) {
+      memCombo++; $('mem-combo').textContent = memCombo;
+      memMatches++;
+      ca.el.classList.add('matched'); cb.el.classList.add('matched');
+      ca.matched = true; cb.matched = true;
+      addTotal(20 + memCombo*5);
+      floatScore(ca.el, `+${20+memCombo*5} 🔥`);
+      if (memCombo >= 3) { showToast(`🔥 Combo x${memCombo}! +${memCombo*5} bonus!`); }
+      memFlipped = []; memLocked = false;
+      if (memMatches === memCards.length/2) memWin();
+    } else {
+      memCombo = 0; $('mem-combo').textContent = 0;
+      ca.el.classList.add('wrong'); cb.el.classList.add('wrong');
+      setTimeout(() => {
+        ca.el.classList.remove('flipped','wrong'); cb.el.classList.remove('flipped','wrong');
+        ca.flipped = false; cb.flipped = false;
+        memFlipped = []; memLocked = false;
+      }, 900);
+    }
+    if (memCombo>=3) checkAch('mem3combo','Memory: Combo 3!');
+  }
+}
+
+function memWin() {
+  const key = `mem-${memDiff}`;
+  if (!memHiBest[key] || memMoves < memHiBest[key]) {
+    memHiBest[key] = memMoves;
+    $('mem-hi').textContent = `${memMoves} langkah`;
+  }
+  addTotal(100);
+  checkAch('memwin','Memory: Selesaikan Puzzle!');
+  openModal('🎉','Selesai!', `${memMoves} Langkah`,
+    `Kamu menyelesaikan puzzle dengan ${memMoves} langkah! Combo terbaik: ${memCombo}`, startMemory);
+}
+
+/* ═══════════════════════════════════════════════════════
+   GAME 3: WHACK-A-MOLE
+═══════════════════════════════════════════════════════ */
+const MOLES = ['🐹','🐭','🐿️','🦔','🐀'];
+const BOMBS = ['💣'];
+const HOLE_COUNT = 9;
+const MOLE_DURATIONS = { easy: 1800, medium: 1200, hard: 700 };
+const MOLE_INTERVALS = { easy: 1100, medium: 750, hard: 450 };
+let moleScore = 0, moleMiss = 0, moleDiff = 'easy', moleRunning = false;
+let moleTimers = [], moleMain = null, moleCountdown = null, moleTimeLeft = 30;
+let moleHiScores = JSON.parse(localStorage.getItem('mole-hi') || '[]');
+
+function setMoleDiff(d, btn) {
+  moleDiff = d;
+  $('mole-diff-row').querySelectorAll('.diff-btn').forEach(b => b.className = 'diff-btn');
+  btn.className = `diff-btn active-${d}`;
+  if (moleRunning) { stopMole(); }
+}
+
+function buildMoleGrid() {
+  const grid = $('mole-grid');
+  grid.innerHTML = '';
+  for (let i = 0; i < HOLE_COUNT; i++) {
+    const hole = document.createElement('div');
+    hole.className = 'mole-hole';
+    hole.dataset.index = i;
+    hole.innerHTML = `<span class="mole-emoji" id="mole-e-${i}">🕳️</span>`;
+    hole.addEventListener('click', () => whackMole(i));
+    hole.addEventListener('touchend', e => { e.preventDefault(); whackMole(i); }, {passive:false});
+    grid.appendChild(hole);
+  }
+}
+
+function startMole() {
+  buildMoleGrid();
+  moleScore = 0; moleMiss = 0; moleTimeLeft = 30; moleRunning = true;
+  $('mole-score').textContent = 0; $('mole-miss').textContent = 0;
+  $('mole-start-btn').textContent = '⏳ Berjalan...';
+  $('mole-start-btn').disabled = true;
+  $('mole-timer-fill').style.width = '100%';
+
+  moleMain = setInterval(() => {
+    if (!moleRunning) return;
+    const i = Math.floor(Math.random()*HOLE_COUNT);
+    const hole = document.querySelector(`.mole-hole[data-index="${i}"]`);
+    if (!hole || hole.classList.contains('active')) return;
+
+    const isBomb = Math.random() < (moleDiff==='hard'?.25:.1);
+    const emoji = isBomb ? BOMBS[0] : MOLES[Math.floor(Math.random()*MOLES.length)];
+    $(`mole-e-${i}`).textContent = emoji;
+    hole.classList.add('active');
+    hole.dataset.type = isBomb ? 'bomb' : 'mole';
+
+    const dur = MOLE_DURATIONS[moleDiff];
+    const t = setTimeout(() => {
+      if (hole.classList.contains('active') && !hole.classList.contains('whacked')) {
+        if (hole.dataset.type === 'mole') { moleMiss++; $('mole-miss').textContent = moleMiss; }
+      }
+      hole.classList.remove('active','whacked');
+    }, dur);
+    moleTimers.push(t);
+  }, MOLE_INTERVALS[moleDiff]);
+
+  moleCountdown = setInterval(() => {
+    moleTimeLeft--;
+    $('mole-timer-fill').style.width = `${(moleTimeLeft/30)*100}%`;
+    if (moleTimeLeft <= 0) { clearInterval(moleCountdown); finishMole(); }
+  }, 1000);
+}
+
+function whackMole(i) {
+  if (!moleRunning) return;
+  const hole = document.querySelector(`.mole-hole[data-index="${i}"]`);
+  if (!hole || !hole.classList.contains('active') || hole.classList.contains('whacked')) return;
+
+  const type = hole.dataset.type;
+  hole.classList.add('whacked');
+
+  if (type === 'bomb') {
+    moleScore = Math.max(0, moleScore - 20); addTotal(-5);
+    $('mole-score').textContent = moleScore;
+    floatScore(hole, '-20 💣');
+    showToast('💣 BOM! -20 poin!');
+  } else {
+    const pts = moleDiff === 'hard' ? 20 : moleDiff === 'medium' ? 15 : 10;
+    moleScore += pts; addTotal(pts);
+    $('mole-score').textContent = moleScore;
+    floatScore(hole, `+${pts}`);
+    if (moleScore >= 50) checkAch('mole50','Mole Buster!');
+    if (moleScore >= 150) checkAch('mole150','Mole Maniac!');
+  }
+
+  setTimeout(() => hole.classList.remove('active','whacked'), 300);
+}
+
+function stopMole() {
+  moleRunning = false;
+  clearInterval(moleMain); clearInterval(moleCountdown);
+  moleTimers.forEach(clearTimeout); moleTimers = [];
+  $('mole-start-btn').textContent = '▶ Mulai (30s)';
+  $('mole-start-btn').disabled = false;
+  $('mole-timer-fill').style.width = '100%';
+}
+
+function finishMole() {
+  stopMole();
+  const best = $('mole-hi').textContent;
+  if (moleScore > parseInt(best)) $('mole-hi').textContent = moleScore;
+  moleHiScores.push({ name: `🔨 Sesi`, score: moleScore, diff: moleDiff });
+  moleHiScores.sort((a,b) => b.score-a.score);
+  moleHiScores = moleHiScores.slice(0,5);
+  localStorage.setItem('mole-hi', JSON.stringify(moleHiScores));
+  renderMoleHiScores();
+  openModal('🔨','Waktu Habis!', `${moleScore} pts`,
+    `Miss: ${moleMiss} | Mode: ${moleDiff}`, startMole);
+}
+
+function renderMoleHiScores() {
+  const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+  $('mole-hiscore-list').innerHTML = moleHiScores.map((s,i) =>
+    `<div class="hiscore-row"><span class="rank">${medals[i]}</span><span class="name">${s.name} <span style="color:var(--text2);font-size:.75rem">[${s.diff}]</span></span><span class="pts">${s.score}</span></div>`
+  ).join('') || `<div class="hiscore-row" style="color:var(--text2)">Belum ada skor!</div>`;
+}
+
+buildMoleGrid();
+</script>
+</body>
+</html>
